@@ -11,7 +11,7 @@ Kaynak: Teknofest 2021 inme verisi (https://acikveri.saglik.gov.tr/Home/DataSets
 
 Sınıflar: İnme var / İnme yok
 
-Fold Kullanımı:Çapraz validasyon ile 3 alt küme oluşturulmuş ve en iyi model ağırlıkları CV3 ile elde edilmiştir.CV3 ile topluluk öğrenmede (vgg16+mobilnetv3_large) %99.67 F1 skor bulunmuştur
+Fold Kullanımı: Çapraz validasyon ile 3 alt küme oluşturulmuş ve en iyi model ağırlıkları CV3 ile elde edilmiştir.CV3 ile topluluk öğrenmede (vgg16+mobilnetv3_large) %99.67 F1 skor bulunmuştur.
 
 Veri Artırma (Augmentation) Yöntemleri kullanılmıştır.
 
