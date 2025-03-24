@@ -56,7 +56,7 @@ python topluluk_ogrenme_vgg_mobilenet.py
 
 Kaggle'dan bulunan harici veri setiyle modeli test etmek için:
 ```
-python external_test.py
+python external/external_test.py
 ```
 
 ### 5. Örnek Çalıştırma
