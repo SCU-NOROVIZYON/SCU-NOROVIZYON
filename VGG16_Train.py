@@ -18,8 +18,8 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     gc.collect()
 
-    # Kullanıcıdan gelen veri yolu
-    base_path = r"C:\Users\Monster\Desktop\ikiSinifliVeri_seed52"
+    
+    base_path = "data/"
     train_path = os.path.join(base_path, "train")
     test_path = os.path.join(base_path, "test")
 
@@ -27,9 +27,9 @@ if __name__ == '__main__':
         raise FileNotFoundError(f"Train veya Test klasörü bulunamadı: {train_path} veya {test_path}")
 
     batch_size = 32
-    num_epochs = 1
+    num_epochs = 100
     learning_rate = 0.0001
-    num_classes = 2  # 2 sınıf (Hastalıklı ve Sağlıklı)
+    num_classes = 2 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     patience = 15
     best_test_loss = float('inf')
@@ -74,11 +74,11 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.5)#kilcara söyle
 
-    best_model_path_acc = "best_vgg16_model_acc_2classes.pth"
-    best_weights_path_acc = "best_weights_vgg16_model_acc_2classes.pth"
+    best_model_path_acc = "vgg16_model_acc.pth"
+    best_weights_path_acc = "weights_vgg16_model_acc.pth"
 
-    best_model_path_loss = "best_vgg16_model_loss_2classes.pth"
-    best_weights_path_loss = "best_weights_vgg16_model_loss_2classes.pth"
+    best_model_path_loss = "vgg16_model_loss.pth"
+    best_weights_path_loss = "vgg16_weights_loss.pth"
 
     train_losses, test_losses = [], []
     train_accuracies, test_accuracies = [], []
@@ -255,7 +255,6 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix")
     plt.show()
     
-    # Görselleştirmeyi yapma
     visualize_with_tsne(model, test_loader, 'features')  # 512'den sonra
     visualize_with_tsne(model, test_loader, 'classifier')  # 256'dan sonra
    
