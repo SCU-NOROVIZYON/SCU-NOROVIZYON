@@ -14,26 +14,24 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 def create_model(num_classes=2, device='cuda'):
-    # MobileNetV3 modelini yükle
+   
     mobilenet_v3_large = models.mobilenet_v3_large(weights=models.MobileNet_V3_Large_Weights.IMAGENET1K_V1)
 
     for param in mobilenet_v3_large.parameters():
-        param.requires_grad = True  # Tüm parametrelerin eğitilmesine izin ver
-
-    # Global average pooling
+        param.requires_grad = True 
+   
     mobilenet_v3_large.avgpool = nn.AdaptiveAvgPool2d(1)
-
-    # Son katmanları ayarlama
+    
     mobilenet_v3_large.classifier = nn.Sequential(
         nn.Flatten(),
-        nn.Linear(960, 512),  # 960 → 512, doğru çıkış boyutunu kullan
+        nn.Linear(960, 512),  
         nn.ReLU(),
-        nn.BatchNorm1d(512),  # Batch Normalization
-        nn.Dropout(0.5),  # Dropout
-        nn.Linear(512, 256),  # 512 → 256
+        nn.BatchNorm1d(512),  
+        nn.Dropout(0.5), 
+        nn.Linear(512, 256),  
         nn.ReLU(),
-        nn.Linear(256, num_classes),  # 256 → 2 (çıkış katmanı)
-        nn.Softmax(dim=1)  # Softmax
+        nn.Linear(256, num_classes), 
+        nn.Softmax(dim=1)  
     )
 
     return mobilenet_v3_large.to(device)
@@ -43,8 +41,8 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     gc.collect()
 
-    # Kullanıcıdan gelen veri yolu
-    base_path = r"C:\Users\Monster\Desktop\ikiSinifliVeri_seed32_aug"
+  
+    base_path = "data/"
     train_path = os.path.join(base_path, "train")
     test_path = os.path.join(base_path, "test")
 
@@ -54,7 +52,7 @@ if __name__ == '__main__':
     batch_size = 32
     num_epochs = 125
     learning_rate = 0.0001
-    num_classes = 2  # 2 sınıf (Hastalıklı ve Sağlıklı)
+    num_classes = 2  
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     patience = 15
     best_test_loss = float('inf')
@@ -73,18 +71,18 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
-    # Modeli oluştur
+    
     model = create_model(num_classes=num_classes, device=device)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0001)
     criterion = nn.CrossEntropyLoss()
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.5)
 
-    best_model_path_acc = "best_mobilenetv3_model_acc_2classes.pth"
-    best_weights_path_acc = "best_weights_mobilenetv3_model_acc_2classes.pth"
+    best_model_path_acc = "mobilenetv3_model_acc.pth"
+    best_weights_path_acc = "mobilenetv3_weights_acc.pth"
 
-    best_model_path_loss = "best_mobilenetv3_model_loss_2classes.pth"
-    best_weights_path_loss = "best_weights_mobilenetv3_model_loss_2classes.pth"
+    best_model_path_loss = "mobilenetv3_model_loss.pth"
+    best_weights_path_loss = "mobilenetv3_weights_loss.pth"
 
     train_losses, test_losses = [], []
     train_accuracies, test_accuracies = [], []
@@ -260,6 +258,5 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix")
     plt.show()
     
-    # Görselleştirmeyi yapma
-    visualize_with_tsne(model, test_loader, 'features')  # 512'den sonra
-    visualize_with_tsne(model, test_loader, 'classifier')  # 256'dan sonra
+    visualize_with_tsne(model, test_loader, 'features')  
+    visualize_with_tsne(model, test_loader, 'classifier')  
