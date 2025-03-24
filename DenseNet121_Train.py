@@ -113,16 +113,16 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
 
         if test_acc > best_acc:
             best_acc = test_acc
-            torch.save(model.state_dict(), "densenet121_aug_model_weights_acc.pth")
-            torch.save(model, "densenet121_aug_model_acc.pth")
+            torch.save(model.state_dict(), "densenet121_weights_acc.pth")
+            torch.save(model, "densenet121_model_acc.pth")
             print("accuracy e göre kaydedildi")
             early_stopping_counter = 0 
         else:
             early_stopping_counter += 1
         if test_loss < best_loss:
             best_loss = test_loss
-            torch.save(model.state_dict(), "densenet121_aug_model_weight_loss.pth")
-            torch.save(model, "densenet121_aug_model_loss.pth")
+            torch.save(model.state_dict(), "densenet121_model_weights_loss.pth")
+            torch.save(model, "densenet121_model_loss.pth")
             print("loss a göre kaydedildi")
 
         if early_stopping_counter >= patience:
@@ -132,7 +132,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
     plt.plot(train_losses, label='Train Loss')
     plt.plot(test_losses, label='Test Loss')
     plt.legend()
-    plt.savefig("densenet121_aug_data_train_test_loss")
+    plt.savefig("densenet121_train_test_loss")
     plt.show()
 
 
@@ -195,14 +195,14 @@ def visualize_tsne(model, loader, classes):
     plt.figure(figsize=(10, 6))
     sns.scatterplot(x=transformed_features_512[:, 0], y=transformed_features_512[:, 1], hue=label_names, palette='coolwarm')
     plt.title("t-SNE visualization before the 512 neurons layer")
-    plt.savefig(f"/content/drive/MyDrive/densenet121_aug_data{data}_try{tryy}_tsne_before_512")
+    plt.savefig("densenet121_tsne_before_512")
     plt.show()
 
     transformed_features_256 = tsne.fit_transform(features_256)
     plt.figure(figsize=(10, 6))
     sns.scatterplot(x=transformed_features_256[:, 0], y=transformed_features_256[:, 1], hue=label_names, palette='coolwarm')
     plt.title("t-SNE visualization after the 256 neurons layer")
-    plt.savefig(f"/content/drive/MyDrive/densenet121_aug_data{data}_try{tryy}_tsne_after_256")
+    plt.savefig("densenet121_tsne_after_256")
     plt.show()
 
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -215,7 +215,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0
 
 train_model(model, train_loader, test_loader, criterion, optimizer, scheduler)
 
-best_model = torch.load("densenet121_aug_model_acc.pth", weights_only=False).to(dev)
+best_model = torch.load("densenet121_model_acc.pth", weights_only=False).to(dev)
 
 test_model(best_model, test_loader, criterion, classes)
 visualize_tsne(best_model, test_loader, classes)
