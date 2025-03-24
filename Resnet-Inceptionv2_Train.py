@@ -20,13 +20,10 @@ def create_model(num_classes=2, device='cuda'):
     for param in model.parameters():
         param.requires_grad = True
 
-    # Adaptive Average Pooling ekle
     model.avg_pool = nn.AdaptiveAvgPool2d(1) 
 
-    # Modelin son katmanını değiştir
     in_features = model.classif.in_features  
 
-    # Düzleştirme işlemi ekle
     model.classif = nn.Sequential(
         nn.Flatten(),
         nn.Linear(in_features, 512),
@@ -49,16 +46,16 @@ def extract_features(model, dataloader, device):
         for inputs, labels in dataloader:
             inputs = inputs.to(device)
 
-            # Modelin ara katmanlarından özellikleri alalım
-            x = model.classif[0](model.avg_pool(model.forward_features(inputs)))  # Flatten sonrası 1536 boyut
-            x = model.classif[1](x)  # Linear (1536 → 512)
-            x = model.classif[2](x)  # ReLU
-            x = model.classif[3](x)  # BatchNorm
+          
+            x = model.classif[0](model.avg_pool(model.forward_features(inputs)))  
+            x = model.classif[1](x)  
+            x = model.classif[2](x) 
+            x = model.classif[3](x)  
 
             features_512.append(x.cpu().numpy())
-            x = model.classif[4](x)  # Dropout
-            x = model.classif[5](x)  # Linear (512 → 256)
-            x = model.classif[6](x)  # ReLU
+            x = model.classif[4](x)  
+            x = model.classif[5](x) 
+            x = model.classif[6](x)  
 
             features_256.append(x.cpu().numpy())
             labels_list.append(labels.cpu().numpy())
@@ -82,7 +79,7 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     gc.collect()
 
-    base_path = r"C:\Users\Monster\Desktop\ikiSinifliVeri_seed52"
+    base_path =" data/"
     train_path = os.path.join(base_path, "train")
     test_path = os.path.join(base_path, "test")
 
@@ -99,7 +96,7 @@ if __name__ == '__main__':
     best_test_accuracy = 0.0
     early_stopping_counter = 0  
     
-    # Train ve Test kayıpları ve doğruluklarını saklamak için listeler
+    
     train_losses = []
     test_losses = []
     train_accuracies = []
@@ -123,11 +120,11 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.5)
 
-    best_model_path_acc = "best_inception_resnet_v2_model_acc_2classes.pth"
-    best_weights_path_acc = "best_weights_inception_resnet_v2_model_acc_2classes.pth"
+    best_model_path_acc = "inception_resnet_v2_model_acc.pth"
+    best_weights_path_acc = "inception_resnet_v2_weights_acc.pth"
 
-    best_model_path_loss = "best_inception_resnet_v2_model_loss_2classes.pth"
-    best_weights_path_loss = "best_weights_inception_resnet_v2_model_loss_2classes.pth"
+    best_model_path_loss = "inception_resnet_v2_model_loss.pth"
+    best_weights_path_loss = "inception_resnet_v2_weights_loss.pth"
 
     for epoch in range(num_epochs):
         model.train()
@@ -267,13 +264,13 @@ if __name__ == '__main__':
     print(f"Test Precision: {precision_score(all_test_labels, all_test_preds, average='weighted', zero_division=1) * 100:.2f}%")
     print(f"Test Recall: {recall_score(all_test_labels, all_test_preds, average='weighted') * 100:.2f}%")
     print(f"Test F1 Score: {f1_score(all_test_labels, all_test_preds, average='weighted') * 100:.2f}%")
-    # TSNE için özellikleri çıkar
+    
     features_512, features_256, labels = extract_features(model, test_loader, device)
 
-    # TSNE ile 2 boyuta indir
+    
     tsne_512 = TSNE(n_components=2, random_state=42).fit_transform(features_512)
     tsne_256 = TSNE(n_components=2, random_state=42).fit_transform(features_256)
 
-    # Görselleri çizdir
+    
     plot_tsne(tsne_512, labels, "TSNE Visualization of 512-D Features")
     plot_tsne(tsne_256, labels, "TSNE Visualization of 256-D Features")
