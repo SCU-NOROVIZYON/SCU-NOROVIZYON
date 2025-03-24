@@ -62,6 +62,7 @@ python external_test.py
 ### 5. Örnek Çalıştırma
 
 Bir inme olan ve olmayan fotoğraf için tahmin almak amacıyla:
+<br><br>
 📂 [sample/](sample/) - Modelin nasıl çalıştığını gösteren örnekler 
 ```
 python sample/sample.py
@@ -72,6 +73,8 @@ python sample/sample.py
 En iyi bireysel model ve topluluk öğrenme modelinin karmaşıklık matrisleri (confusion matrix) oluşturulmuştur.
 
 t-SNE grafikleri, fully connected katmanlardan sonra özniteliklerin nasıl ayrıştığını göstermek için eklenmiştir.
+<br><br>
+
 📂 [results/](results/)
 
 Kaggle'dan alınan harici bir veri seti ile de model test edilmiştir (sample klasörü).
