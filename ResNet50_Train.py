@@ -181,36 +181,39 @@ def test_model(model, test_loader, criterion, classes):
 
 def visualize_tsne(model, loader, classes):
     model.eval()
-    features_512, features_256, labels = [], [], []
+    features_before_512, features_512, features_256, logits, labels = [], [], [], [], []
     with torch.no_grad():
         for inputs, lbls in loader:
             inputs = inputs.cuda()
-            _, ftrs_512, ftrs_256 = model(inputs)
+            softmax_out, ftrs_512, ftrs_256 = model(inputs) 
+            features_before_512.append(inputs.cpu().numpy().reshape(inputs.shape[0], -1))  
             features_512.append(ftrs_512.cpu().numpy())
             features_256.append(ftrs_256.cpu().numpy())
+            logits.append(softmax_out.cpu().numpy())
             labels.append(lbls.numpy())
-
+    
+    features_before_512 = np.concatenate(features_before_512)
     features_512 = np.concatenate(features_512)
     features_256 = np.concatenate(features_256)
+    logits = np.concatenate(logits)
     labels = np.concatenate(labels)
 
     label_names = [classes[label] for label in labels]
 
     tsne = TSNE(n_components=2, perplexity=30, random_state=20)
-
+    
     transformed_features_512 = tsne.fit_transform(features_512)
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
     sns.scatterplot(x=transformed_features_512[:, 0], y=transformed_features_512[:, 1], hue=label_names, palette='coolwarm')
-    plt.title("t-SNE visualization before the 512 neurons layer")
-    plt.savefig(f"/content/drive/MyDrive/resnet50_aug_data{data}_try{tryy}_tsne_before_512")
+    plt.title("512 nöronlu katman sonrası.")
+    plt.savefig("resnet50_tsne_after_512.png")
     plt.show()
-
-    # 256 nöronlu katmandan sonraki özelliklerin görselleştirilmesi
+    
     transformed_features_256 = tsne.fit_transform(features_256)
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
     sns.scatterplot(x=transformed_features_256[:, 0], y=transformed_features_256[:, 1], hue=label_names, palette='coolwarm')
-    plt.title("t-SNE visualization after the 256 neurons layer")
-    plt.savefig(f"/content/drive/MyDrive/resnet50_aug_data{data}_try{tryy}_tsne_after_256")
+    plt.title("256 nöronlu katman sonrası.")
+    plt.savefig("resnet50_tsne_after_256.png")
     plt.show()
 
 
