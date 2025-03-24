@@ -9,10 +9,6 @@ from sklearn.manifold import TSNE
 import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 
-data = 52
-tryy = 3
-
-print(torch.cuda.is_available())
 
 def get_data_loaders(batch_size=128):
     transform = transforms.Compose([
@@ -20,31 +16,26 @@ def get_data_loaders(batch_size=128):
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    train_dataset = datasets.ImageFolder(f'/content/drive/MyDrive/ikiSinifliVeri{data}_aug/train', transform=transform)
-    test_dataset = datasets.ImageFolder(f'/content/drive/MyDrive/ikiSinifliVeri{data}_aug/test', transform=transform)
+    train_dataset = datasets.ImageFolder('data/train', transform=transform)
+    test_dataset = datasets.ImageFolder('dat/test', transform=transform)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
     return train_loader, test_loader, train_dataset.classes
-
-import torch
-import torch.nn as nn
 
 class CustomResNet50(nn.Module):
     def __init__(self, base_model):
         super(CustomResNet50, self).__init__()
 
-        # **Tüm katmanları eğitime aç**
         for param in base_model.parameters():
-            param.requires_grad = True  # Tüm katmanları eğitilebilir yap
+            param.requires_grad = True
 
         self.base = nn.Sequential(*list(base_model.children())[:-2])
         self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
-        # Fully connected katmanları
         self.fc1 = nn.Linear(2048, 512)
-        self.dropout1 = nn.Dropout(0.5)  # İlk fully connected katmandan sonra dropout
+        self.dropout1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(512, 256)
-        self.dropout2 = nn.Dropout(0.5)  # İkinci fully connected katmandan sonra dropout
+        self.dropout2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(256, 2)
 
         self.softmax = nn.Softmax(dim=1)
@@ -55,10 +46,10 @@ class CustomResNet50(nn.Module):
         x = torch.flatten(x, 1)
 
         features_512 = self.fc1(x)
-        features_512 = self.dropout1(features_512)  # Dropout uygula
+        features_512 = self.dropout1(features_512)
 
         x = self.fc2(features_512)
-        x = self.dropout2(x)  # Dropout uygula
+        x = self.dropout2(x)
 
         x = self.fc3(x)
         return self.softmax(x), features_512, x
@@ -87,18 +78,15 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
             correct += (outputs.argmax(1) == labels).sum().item()
             total += labels.size(0)
 
-            # Save labels and predictions for F1 score
             all_train_labels.append(labels.cpu().numpy())
             all_train_preds.append(outputs.argmax(1).cpu().numpy())
 
-        # Calculate train accuracy and F1 score
         train_acc = correct / total
         train_losses.append(train_loss / len(train_loader))
         all_train_labels = np.concatenate(all_train_labels)
         all_train_preds = np.concatenate(all_train_preds)
         train_f1 = f1_score(all_train_labels, all_train_preds, average='weighted')
 
-        # Validation step
         model.eval()
         test_loss, correct, total = 0, 0, 0
         all_test_labels, all_test_preds = [], []
@@ -111,11 +99,9 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
                 correct += (outputs.argmax(1) == labels).sum().item()
                 total += labels.size(0)
 
-                # Save labels and predictions for F1 score
                 all_test_labels.append(labels.cpu().numpy())
                 all_test_preds.append(outputs.argmax(1).cpu().numpy())
 
-        # Calculate test accuracy and F1 score
         test_acc = correct / total
         test_losses.append(test_loss / len(test_loader))
         all_test_labels = np.concatenate(all_test_labels)
@@ -129,27 +115,26 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
 
         if test_acc > best_acc:
             best_acc = test_acc
-            torch.save(model.state_dict(), f"/content/drive/MyDrive/resnet50_aug_model_weights_acc_data{data}_try{tryy}.pth")
-            torch.save(model, f"/content/drive/MyDrive/resnet50_aug_model_acc_data{data}_try{tryy}.pth")
+            torch.save(model.state_dict(), "resnet50_weights_acc.pth")
+            torch.save(model, "resnet50_model_acc.pth")
             print("accuracy e göre kaydedildi")
-            early_stopping_counter = 0  # Test doğruluğu iyileştiğinde sayaç sıfırlanır
+            early_stopping_counter = 0 
         else:
             early_stopping_counter += 1
         if test_loss < best_loss:
             best_loss = test_loss
-            torch.save(model.state_dict(), f"/content/drive/MyDrive/resnet50_aug_model_weight_loss_data{data}_try{tryy}.pth")
-            torch.save(model, f"/content/drive/MyDrive/resnet50_aug_model_loss_data{data}_try{tryy}.pth")
+            torch.save(model.state_dict(), "resnet50_weights_loss.pth")
+            torch.save(model, "resnet50_model_loss.pth")
             print("loss a göre kaydedildi")
 
 
         if early_stopping_counter >= patience:
             break
 
-    # Plotting loss curves
     plt.plot(train_losses, label='Train Loss')
     plt.plot(test_losses, label='Test Loss')
     plt.legend()
-    plt.savefig(f"/content/drive/MyDrive/resnet50_aug_data{data}_try{tryy}_train_test_looss")
+    plt.savefig("resnet50_train_test_looss")
     plt.show()
 
 
@@ -157,7 +142,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
 def test_model(model, test_loader, criterion, classes):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-    model.eval()  # Test sırasında modeli eval moduna al
+    model.eval() 
     test_loss = 0.0
     correct_test = 0
     total_test = 0
@@ -175,7 +160,6 @@ def test_model(model, test_loader, criterion, classes):
             correct_test += (preds == labels).sum().item()
             total_test += labels.size(0)
 
-            # Tahminleri ve gerçek etiketleri kaydet
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
 
@@ -190,7 +174,6 @@ def test_model(model, test_loader, criterion, classes):
     print(f"Test Loss: {avg_test_loss:.4f}, Test Accuracy: {test_acc:.4f}")
     print(f"\nF1-score: {f1:.4f}, \nAccuracy: {accuracy:.4f}\nPrecision: {precision:.4f}, \nRecall: {recall:.4f}, ")
 
-    # Sınıflandırma raporunu oluştur
     print("\nClassification Report:")
     print(classification_report(all_labels, all_preds, target_names=classes))
     print("\nConfusion Matrix:")
@@ -202,7 +185,7 @@ def visualize_tsne(model, loader, classes):
     with torch.no_grad():
         for inputs, lbls in loader:
             inputs = inputs.cuda()
-            _, ftrs_512, ftrs_256 = model(inputs)  # Hem 512 hem de 256 katmandan özellik al
+            _, ftrs_512, ftrs_256 = model(inputs)
             features_512.append(ftrs_512.cpu().numpy())
             features_256.append(ftrs_256.cpu().numpy())
             labels.append(lbls.numpy())
@@ -211,13 +194,10 @@ def visualize_tsne(model, loader, classes):
     features_256 = np.concatenate(features_256)
     labels = np.concatenate(labels)
 
-    # Sınıf isimlerini etiketlerden almak için
     label_names = [classes[label] for label in labels]
 
-    # TSNE ile görselleştirme
     tsne = TSNE(n_components=2, perplexity=30, random_state=20)
 
-    # 512 nöronlu katmandan önceki özelliklerin görselleştirilmesi
     transformed_features_512 = tsne.fit_transform(features_512)
     plt.figure(figsize=(10, 6))
     sns.scatterplot(x=transformed_features_512[:, 0], y=transformed_features_512[:, 1], hue=label_names, palette='coolwarm')
@@ -244,7 +224,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10)
 train_model(model, train_loader, test_loader, criterion, optimizer, scheduler)
 
-best_model = torch.load(f"/content/drive/MyDrive/resnet50_aug_model_acc_data{data}_try{tryy}.pth", weights_only=False).to(dev)
+best_model = torch.load("resnet50_model_acc.pth", weights_only=False).to(dev)
 
 test_model(best_model, test_loader, criterion, classes)
 visualize_tsne(best_model, test_loader, classes)
