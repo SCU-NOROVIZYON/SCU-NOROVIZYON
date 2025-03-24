@@ -23,6 +23,7 @@ Ekstra Test Seti: Kaggle'dan harici bir test seti (https://www.kaggle.com/datase
 
 6 farklı transfer öğrenme modeli özelleştirilerek eğitilmiştir.
 Modellerin en iyi sonuç veren ağırlıkları kaydedilmiştir.
+<br><br>
 📂 [model_weights/](model_weights/)
 
 Bu modeller arasından en iyi performans veren iki model seçilerek topluluk öğrenme modeli oluşturulmuştur.
