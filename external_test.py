@@ -59,9 +59,9 @@ test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 
 vgg = create_vgg16()
-vgg.load_state_dict(torch.load("C:\Users\kilca\Desktop\models/model_weights/vgg16_weights.pth"))
+vgg.load_state_dict(torch.load("vgg16_weights.pth"))
 mobilenet = create_mobilenetv3_large()
-mobilenet.load_state_dict(torch.load("C:\Users\kilca\Desktop\models/model_weights/mobilenetv3large_weights.pth"))
+mobilenet.load_state_dict(torch.load("mobilenetv3large_weights.pth"))
 vgg.eval()
 mobilenet.eval()
 
