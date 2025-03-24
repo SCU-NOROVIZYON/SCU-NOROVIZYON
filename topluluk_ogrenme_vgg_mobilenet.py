@@ -55,14 +55,14 @@ transform = transforms.Compose([
 ])
 
 
-test_dataset = datasets.ImageFolder(r'C:/Users/kilca/Desktop/strokeTamami/ikiSinifliVeri52_aug/test', transform=transform)
+test_dataset = datasets.ImageFolder('data/test', transform=transform)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 
 vgg = create_vgg16()
-vgg.load_state_dict(torch.load(r"C:\Users\kilca\Desktop\weights/best_weights_vgg16_model_acc_2classes.pth"))
+vgg.load_state_dict(torch.load("model_weights/vgg16_weights"))
 mobilenet = create_mobilenetv3_large()
-mobilenet.load_state_dict(torch.load(r"C:\Users\kilca\Desktop\weights/best_weights_mobilenetv3large_model_acc_2classes.pth"))
+mobilenet.load_state_dict(torch.load("model_weights/mobilenet_weights"))
 vgg.eval()
 mobilenet.eval()
 
@@ -72,7 +72,7 @@ logits_list = []
 true_labels = []
 predicted_labels = []
 
-models = [vgg,mobilenet]
+models = [vgg, mobilenet]
 
 with torch.no_grad():
     for images, labels in test_loader:  
